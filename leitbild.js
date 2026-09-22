@@ -158,6 +158,7 @@ function updateState() {
 function initialiseInteractivePage() {
   const stage = document.querySelector(".logo-stage");
   if (!stage) return;
+  initialiseMobileChoice();
   leitbild.forEach((topic) => stage.append(createTopic(topic)));
 
   document.querySelectorAll(".topic").forEach((topicElement) => {
@@ -204,6 +205,26 @@ function initialiseInteractivePage() {
   });
   reducedMotion.addEventListener?.("change", updateState);
   updateState();
+}
+
+function initialiseMobileChoice() {
+  const dialog = document.querySelector(".mobile-choice");
+  if (!dialog || !window.matchMedia("(max-width: 700px)").matches) return;
+  let hasChosen = false;
+  try {
+    hasChosen = sessionStorage.getItem("leitbild-mobile-choice") === "done";
+  } catch {
+    hasChosen = false;
+  }
+  if (hasChosen) return;
+  dialog.addEventListener("close", () => {
+    try {
+      sessionStorage.setItem("leitbild-mobile-choice", "done");
+    } catch {
+      // Session storage may be unavailable for local files.
+    }
+  }, { once: true });
+  dialog.showModal();
 }
 
 function initialiseCompactPage() {

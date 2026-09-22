@@ -90,6 +90,14 @@ h1 { max-width: 760px; margin: 12px 0 18px; font-size: clamp(2.4rem, 6vw, 5.6rem
 .topic-card li + li, .compact-topic li + li { margin-top: 7px; }
 .mobile-panel { display: none; }
 .stage-note { color: var(--muted); margin: 8px 0 0; text-align: center; font: 0.78rem/1.4 Arial, sans-serif; }
+.mobile-choice { width: min(420px, calc(100% - 32px)); padding: 28px; border: 0; border-top: 4px solid var(--yellow); color: var(--ink); background: var(--card); box-shadow: var(--shadow); }
+.mobile-choice::backdrop { background: rgba(37, 42, 45, 0.38); }
+.mobile-choice h2 { margin: 8px 0 12px; font-size: 1.55rem; font-weight: 400; line-height: 1.12; }
+.mobile-choice p:not(.eyebrow) { color: var(--muted); font: 0.95rem/1.5 Arial, sans-serif; }
+.mobile-choice-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.mobile-choice-link, .mobile-choice-continue { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; padding: 10px 14px; border: 1px solid var(--ink); color: var(--ink); background: transparent; font: 0.82rem/1.2 Arial, sans-serif; text-decoration: none; cursor: pointer; }
+.mobile-choice-link { border-color: var(--yellow); background: var(--yellow); }
+.mobile-choice-link:focus-visible, .mobile-choice-continue:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
 
 .compact-list { max-width: 780px; }
 .compact-page-logo { display: block; width: min(190px, 42vw); height: auto; margin: 0 0 38px; }
@@ -102,18 +110,19 @@ h1 { max-width: 760px; margin: 12px 0 18px; font-size: clamp(2.4rem, 6vw, 5.6rem
   .site-header { padding-top: 20px; }
   .page-content { padding-top: 42px; }
   .intro { margin-bottom: 34px; }
-  .logo-stage { min-height: 390px; }
-  .logo-wordmark { font-size: clamp(1.3rem, 7vw, 2.4rem); }
-  .yellow-mark { left: 40%; top: 29%; width: 20px; }
+  .logo-stage { width: min(100%, 360px); min-height: 310px; margin: 8px auto 0; }
+  .logo-wordmark { left: 62%; top: 50%; max-width: 52%; white-space: normal; font-size: clamp(1rem, 5.6vw, 1.45rem); }
+  .logo-wordmark strong { white-space: normal; }
+  .yellow-mark { left: 43%; top: 29%; width: 18px; }
   .topic { width: 46px; height: 46px; }
   .topic-trigger { width: 46px; height: 46px; min-height: 46px; }
   .topic-trigger span { width: 30px; height: 30px; margin: 8px; }
-  .topic--orbit-top { left: 31%; top: 22%; }
-  .topic--orbit-upper-left { left: 22%; top: 29%; }
-  .topic--orbit-left { left: 11%; top: 50%; }
-  .topic--orbit-lower-left { left: 22%; top: 71%; }
-  .topic--orbit-bottom { left: 31%; top: 78%; }
-  .topic--orbit-lower-right { left: 40%; top: 71%; }
+  .topic--orbit-top { left: 31%; top: 20%; }
+  .topic--orbit-upper-left { left: 20%; top: 29%; }
+  .topic--orbit-left { left: 10%; top: 50%; }
+  .topic--orbit-lower-left { left: 20%; top: 71%; }
+  .topic--orbit-bottom { left: 31%; top: 80%; }
+  .topic--orbit-lower-right { left: 42%; top: 71%; }
   .topic-card { display: none; }
   .topic--prototype.is-visible::before { display: none !important; }
   .topic--prototype.is-closing .topic-card { display: none; }
