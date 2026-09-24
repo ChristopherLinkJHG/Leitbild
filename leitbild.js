@@ -155,9 +155,35 @@ function updateState() {
   mobilePanel.classList.toggle("has-content", Boolean(activeId));
 }
 
+function shouldUseCompactFallback() {
+  const smallScreen = window.matchMedia("(max-width: 760px)").matches;
+  const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+  const noHover = window.matchMedia("(hover: none)").matches || !window.matchMedia("(hover: hover)").matches;
+  const veryShortViewport = window.innerHeight < 500;
+  return smallScreen || coarsePointer || noHover || veryShortViewport;
+}
+
+function redirectToCompactFallback(reason) {
+  const targetUrl = new URL("leitbild-kompakt.html", window.location.href);
+  targetUrl.searchParams.set("fallback", "interactive");
+  targetUrl.searchParams.set("reason", reason);
+  window.location.replace(targetUrl.toString());
+}
+
 function initialiseInteractivePage() {
   const stage = document.querySelector(".logo-stage");
   if (!stage) return;
+  if (shouldUseCompactFallback()) {
+    const reason = window.matchMedia("(pointer: coarse)").matches
+      ? "coarse-pointer"
+      : window.matchMedia("(hover: none)").matches || !window.matchMedia("(hover: hover)").matches
+        ? "no-hover"
+        : window.innerHeight < 500
+          ? "short-height"
+          : "small-screen";
+    redirectToCompactFallback(reason);
+    return;
+  }
   initialiseMobileChoice();
   leitbild.forEach((topic) => stage.append(createTopic(topic)));
 
@@ -229,6 +255,21 @@ function initialiseMobileChoice() {
 
 function initialiseCompactPage() {
   const list = document.querySelector(".compact-list");
+  const disclaimer = document.querySelector(".compact-disclaimer");
+  const params = new URLSearchParams(window.location.search);
+  const fallbackReason = params.get("fallback");
+
+  if (disclaimer && fallbackReason === "interactive") {
+    disclaimer.hidden = false;
+    const reasonText = {
+      "small-screen": "Die interaktive Leitbildansicht funktioniert auf diesem Bildschirm nicht zuverlässig genug, weil die Fläche zu klein ist.",
+      "coarse-pointer": "Die interaktive Leitbildansicht funktioniert auf diesem Gerät nicht zuverlässig genug, weil die Bedienung ohne präzise Hover-Interaktion kaum möglich ist.",
+      "no-hover": "Die interaktive Leitbildansicht funktioniert auf diesem Gerät nicht zuverlässig genug, weil keine Hover-Bedienung zur Verfügung steht.",
+      "short-height": "Die interaktive Leitbildansicht funktioniert auf diesem Bildschirm nicht zuverlässig genug, weil die vertikale Fläche zu klein ist."
+    }[params.get("reason") || "small-screen"] || "Die interaktive Leitbildansicht funktioniert auf diesem Bildschirm nicht zuverlässig genug.";
+    disclaimer.innerHTML = `<strong>Hinweis:</strong> ${reasonText} Deshalb wird hier die kompakte Darstellung angezeigt.`;
+  }
+
   if (!list) return;
   leitbild.forEach((topic) => {
     const section = document.createElement("section");
