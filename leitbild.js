@@ -71,6 +71,14 @@ let hoveredId = null;
 let hoverExitTimer = null;
 const closingTimers = new Map();
 
+function listenToMediaQuery(query, listener) {
+  if (typeof query.addEventListener === "function") {
+    query.addEventListener("change", listener);
+  } else if (typeof query.addListener === "function") {
+    query.addListener(listener);
+  }
+}
+
 function createCard(topic, className = "topic-card") {
   const card = document.createElement("article");
   card.className = className;
@@ -155,12 +163,18 @@ function updateState() {
   mobilePanel.classList.toggle("has-content", Boolean(activeId));
 }
 
+function updateReducedMotionNotice() {
+  const notice = document.querySelector(".motion-note");
+  if (!notice) return;
+  notice.hidden = !reducedMotion.matches;
+}
+
 function shouldUseCompactFallback() {
-  const smallScreen = window.matchMedia("(max-width: 760px)").matches;
-  const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
-  const noHover = window.matchMedia("(hover: none)").matches || !window.matchMedia("(hover: hover)").matches;
-  const veryShortViewport = window.innerHeight < 500;
-  return smallScreen || coarsePointer || noHover || veryShortViewport;
+  const canHover = window.matchMedia("(hover: hover)").matches;
+  const hasPointer = window.matchMedia("(pointer: fine)").matches
+    || window.matchMedia("(pointer: coarse)").matches;
+  const hasTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  return !canHover && !hasPointer && !hasTouch;
 }
 
 function redirectToCompactFallback(reason) {
@@ -174,14 +188,7 @@ function initialiseInteractivePage() {
   const stage = document.querySelector(".logo-stage");
   if (!stage) return;
   if (shouldUseCompactFallback()) {
-    const reason = window.matchMedia("(pointer: coarse)").matches
-      ? "coarse-pointer"
-      : window.matchMedia("(hover: none)").matches || !window.matchMedia("(hover: hover)").matches
-        ? "no-hover"
-        : window.innerHeight < 500
-          ? "short-height"
-          : "small-screen";
-    redirectToCompactFallback(reason);
+    redirectToCompactFallback("no-pointer-or-hover");
     return;
   }
   initialiseMobileChoice();
@@ -229,13 +236,15 @@ function initialiseInteractivePage() {
       updateState();
     }
   });
-  reducedMotion.addEventListener?.("change", updateState);
+  listenToMediaQuery(reducedMotion, updateState);
+  listenToMediaQuery(reducedMotion, updateReducedMotionNotice);
+  updateReducedMotionNotice();
   updateState();
 }
 
 function initialiseMobileChoice() {
   const dialog = document.querySelector(".mobile-choice");
-  if (!dialog || !window.matchMedia("(max-width: 700px)").matches) return;
+  if (!dialog || typeof dialog.showModal !== "function" || !window.matchMedia("(max-width: 700px)").matches) return;
   let hasChosen = false;
   try {
     hasChosen = sessionStorage.getItem("leitbild-mobile-choice") === "done";
