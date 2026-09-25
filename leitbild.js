@@ -69,6 +69,7 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let activeId = null;
 let hoveredId = null;
 let hoverExitTimer = null;
+let logoScrollTimer = null;
 const closingTimers = new Map();
 
 function listenToMediaQuery(query, listener) {
@@ -117,13 +118,56 @@ function createTopic(topic) {
   return wrapper;
 }
 
+function scrollExpandedTopicIntoView(topicElement) {
+  const checkTimes = [0, 180, 360, 540];
+  checkTimes.forEach((delay) => window.setTimeout(() => {
+    if (!topicElement.isConnected || !topicElement.classList.contains("is-visible")) return;
+    const expandedSquare = topicElement.querySelector(".topic-trigger");
+    if (!expandedSquare) return;
+    const bounds = expandedSquare.getBoundingClientRect();
+    const margin = 24;
+    let scrollDelta = 0;
+    if (bounds.bottom > window.innerHeight - margin) {
+      scrollDelta = bounds.bottom - window.innerHeight + margin;
+    } else if (bounds.top < margin) {
+      scrollDelta = bounds.top - margin;
+    }
+    if (scrollDelta) {
+      window.scrollTo({
+        top: window.scrollY + scrollDelta,
+        behavior: reducedMotion.matches ? "auto" : "smooth"
+      });
+    }
+  }, delay));
+}
+
+function scrollLogoToCenter() {
+  window.clearTimeout(logoScrollTimer);
+  logoScrollTimer = window.setTimeout(() => {
+    const logo = document.querySelector(".logo-wordmark");
+    if (!logo) return;
+    const bounds = logo.getBoundingClientRect();
+    const targetTop = window.scrollY + bounds.top + bounds.height / 2 - window.innerHeight / 2;
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    window.scrollTo({
+      top: Math.max(0, Math.min(targetTop, maxScroll)),
+      behavior: reducedMotion.matches ? "auto" : "smooth"
+    });
+    logoScrollTimer = null;
+  }, 580);
+}
+
 function setActive(id) {
-  const scrollTop = window.scrollY;
+  const topicElement = document.querySelector(`[data-topic="${id}"]`);
+  const wasActive = activeId === id;
   activeId = activeId === id ? null : id;
   hoveredId = null;
   updateState();
-  window.scrollTo(0, scrollTop);
-  window.requestAnimationFrame(() => window.scrollTo(0, scrollTop));
+  if (activeId && topicElement) {
+    scrollExpandedTopicIntoView(topicElement);
+  } else if (wasActive) {
+    scrollLogoToCenter();
+  }
 }
 
 function updateState() {
@@ -206,8 +250,10 @@ function initialiseInteractivePage() {
     });
     topicElement.addEventListener("pointerenter", () => {
       window.clearTimeout(hoverExitTimer);
+      window.clearTimeout(logoScrollTimer);
       hoveredId = id;
       updateState();
+      scrollExpandedTopicIntoView(topicElement);
     });
     topicElement.addEventListener("pointerleave", () => {
       window.clearTimeout(hoverExitTimer);
@@ -215,6 +261,7 @@ function initialiseInteractivePage() {
         if (!activeId) {
           hoveredId = null;
           updateState();
+          scrollLogoToCenter();
         }
       }, 260);
     });
