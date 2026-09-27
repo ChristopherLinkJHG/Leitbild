@@ -70,6 +70,7 @@ let activeId = null;
 let hoveredId = null;
 let hoverExitTimer = null;
 let logoScrollTimer = null;
+let resizeTimer = null;
 const closingTimers = new Map();
 
 function listenToMediaQuery(query, listener) {
@@ -213,6 +214,17 @@ function updateReducedMotionNotice() {
   notice.hidden = !reducedMotion.matches;
 }
 
+function handleViewportResize() {
+  window.clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(() => {
+    window.clearTimeout(hoverExitTimer);
+    window.clearTimeout(logoScrollTimer);
+    hoveredId = null;
+    updateState();
+    updateReducedMotionNotice();
+  }, 120);
+}
+
 function shouldUseCompactFallback() {
   const canHover = window.matchMedia("(hover: hover)").matches;
   const hasPointer = window.matchMedia("(pointer: fine)").matches
@@ -285,6 +297,7 @@ function initialiseInteractivePage() {
   });
   listenToMediaQuery(reducedMotion, updateState);
   listenToMediaQuery(reducedMotion, updateReducedMotionNotice);
+  window.addEventListener("resize", handleViewportResize, { passive: true });
   updateReducedMotionNotice();
   updateState();
 }
